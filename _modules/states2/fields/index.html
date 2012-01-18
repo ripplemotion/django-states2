@@ -1,0 +1,202 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>states2.fields &mdash; django-states2 v1.4.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.4.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="django-states2 v1.4.3 documentation" href="../../../" />
+    <link rel="up" title="Module code" href="../../" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../">django-states2 v1.4.3</a> &raquo;</li>
+          <li><a href="../../" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for states2.fields</h1><div class="highlight"><pre>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;StateField&#39;</span><span class="p">,)</span>
+
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.utils.functional</span> <span class="kn">import</span> <span class="n">curry</span>
+<span class="kn">from</span> <span class="nn">states2.machine</span> <span class="kn">import</span> <span class="n">StateMachine</span>
+
+<span class="kn">from</span> <span class="nn">states2.model_methods</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="StateField"><a class="viewcode-back" href="../../../states2/fields/#states2.fields.StateField">[docs]</a><span class="k">class</span> <span class="nc">StateField</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Add state information to a model.</span>
+
+<span class="sd">    This will add extra methods to the model.</span>
+
+<span class="sd">    Usage::</span>
+
+<span class="sd">        status = StateField(machine=PowerState)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c"># State machine parameter. (Fall back to default machine.</span>
+        <span class="c"># e.g. when South is creating an instance.)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;machine&#39;</span><span class="p">,</span> <span class="n">StateMachine</span><span class="p">)</span>
+
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;max_length&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;choices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">StateField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StateField.contribute_to_class"><a class="viewcode-back" href="../../../states2/fields/#states2.fields.StateField.contribute_to_class">[docs]</a>    <span class="k">def</span> <span class="nf">contribute_to_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">StateField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">contribute_to_class</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+        <span class="c"># Set choice options (for combo box)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_choices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_state_choices</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">initial_state</span>
+
+        <span class="c"># do we need logging?</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">log_transitions</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">states2.log</span> <span class="kn">import</span> <span class="n">_create_state_log_model</span>
+            <span class="n">log_model</span> <span class="o">=</span> <span class="n">_create_state_log_model</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log_model</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;_</span><span class="si">%s</span><span class="s">_log_model&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span> <span class="n">log_model</span><span class="p">)</span>
+
+        <span class="c"># adding extra methods</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;get_</span><span class="si">%s</span><span class="s">_transitions&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
+            <span class="n">curry</span><span class="p">(</span><span class="n">get_STATE_transitions</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="n">name</span><span class="p">))</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;get_public_</span><span class="si">%s</span><span class="s">_transitions&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
+            <span class="n">curry</span><span class="p">(</span><span class="n">get_public_STATE_transitions</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="n">name</span><span class="p">))</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;get_</span><span class="si">%s</span><span class="s">_info&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
+            <span class="n">curry</span><span class="p">(</span><span class="n">get_STATE_info</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">))</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;get_</span><span class="si">%s</span><span class="s">_machine&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
+            <span class="n">curry</span><span class="p">(</span><span class="n">get_STATE_machine</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">))</span>
+
+        <span class="n">models</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">class_prepared</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">finalize</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">cls</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StateField.finalize"><a class="viewcode-back" href="../../../states2/fields/#states2.fields.StateField.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Override ``save``, call initial state handler on save.</span>
+
+<span class="sd">        When ``.save(no_state_validation=True)`` has been used, the state won&#39;t</span>
+<span class="sd">        be validated, and the handler won&#39;t we executed. It&#39;s recommended to</span>
+<span class="sd">        use this parameter in South migrations, because South is not really</span>
+<span class="sd">        aware of which state machine is used for which classes.</span>
+
+<span class="sd">        Note that we wrap ``save`` only after the ``class_prepared`` signal</span>
+<span class="sd">        has been sent, it won&#39;t work otherwise when the model has a</span>
+<span class="sd">        custom ``save`` method.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">real_save</span> <span class="o">=</span> <span class="n">sender</span><span class="o">.</span><span class="n">save</span>
+
+        <span class="k">def</span> <span class="nf">new_save</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">created</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">obj</span><span class="o">.</span><span class="n">id</span>
+
+            <span class="c"># Validate whether this is an existing state</span>
+            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;no_state_validation&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># Can raise UnknownState</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_state</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+
+            <span class="c"># Save first using the real save function</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">real_save</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="c"># Now call the handler</span>
+            <span class="k">if</span> <span class="n">created</span> <span class="ow">and</span> <span class="n">state</span><span class="p">:</span>
+                <span class="n">state</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="n">sender</span><span class="o">.</span><span class="n">save</span> <span class="o">=</span> <span class="n">new_save</span>
+
+
+<span class="c"># South introspection</span></div></div>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">south.modelsinspector</span> <span class="kn">import</span> <span class="n">add_introspection_rules</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">add_introspection_rules</span><span class="p">([</span>
+        <span class="p">(</span>
+            <span class="p">(</span><span class="n">StateField</span><span class="p">,),</span>
+            <span class="p">[],</span>
+            <span class="p">{</span>
+                <span class="s">&#39;max_length&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;is_value&quot;</span><span class="p">:</span> <span class="bp">True</span><span class="p">}],</span>
+            <span class="p">},</span>
+        <span class="p">),</span>
+
+        <span class="p">],</span> <span class="p">[</span><span class="s">&quot;^states2\.fields\.StateField&quot;</span><span class="p">])</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../">django-states2 v1.4.3</a> &raquo;</li>
+          <li><a href="../../" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Jonathan Slenders, Gert Van Gool.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,162 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>states2.exceptions &mdash; django-states2 v1.4.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.4.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="django-states2 v1.4.3 documentation" href="../../../" />
+    <link rel="up" title="Module code" href="../../" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../">django-states2 v1.4.3</a> &raquo;</li>
+          <li><a href="../../" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for states2.exceptions</h1><div class="highlight"><pre>
+<div class="viewcode-block" id="States2Exception"><a class="viewcode-back" href="../../../states2/exceptions/#states2.exceptions.States2Exception">[docs]</a><span class="k">class</span> <span class="nc">States2Exception</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="c"># ==========[ Transition exceptions ]==========</span>
+</div>
+<div class="viewcode-block" id="TransitionException"><a class="viewcode-back" href="../../../states2/exceptions/#states2.exceptions.TransitionException">[docs]</a><span class="k">class</span> <span class="nc">TransitionException</span><span class="p">(</span><span class="n">States2Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="TransitionOnUnsavedObject"><a class="viewcode-back" href="../../../states2/exceptions/#states2.exceptions.TransitionOnUnsavedObject">[docs]</a><span class="k">class</span> <span class="nc">TransitionOnUnsavedObject</span><span class="p">(</span><span class="n">TransitionException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="n">TransitionException</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;Cannot run state transition on unsaved object &#39;</span><span class="si">%s</span><span class="s">&#39;. &quot;</span>
+                <span class="s">&quot;Please call save() on this object first.&quot;</span> <span class="o">%</span> <span class="n">instance</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="PermissionDenied"><a class="viewcode-back" href="../../../states2/exceptions/#states2.exceptions.PermissionDenied">[docs]</a><span class="k">class</span> <span class="nc">PermissionDenied</span><span class="p">(</span><span class="n">TransitionException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">transition</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">():</span>
+            <span class="n">username</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">get_full_name</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">username</span> <span class="o">=</span> <span class="s">&#39;AnonymousUser&#39;</span>
+        <span class="n">TransitionException</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;Permission for executing the state &#39;</span><span class="si">%s</span><span class="s">&#39; has be denied to </span><span class="si">%s</span><span class="s">.&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">username</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="UnknownTransition"><a class="viewcode-back" href="../../../states2/exceptions/#states2.exceptions.UnknownTransition">[docs]</a><span class="k">class</span> <span class="nc">UnknownTransition</span><span class="p">(</span><span class="n">TransitionException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">transition</span><span class="p">):</span>
+        <span class="n">TransitionException</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;Unknown transition &#39;</span><span class="si">%s</span><span class="s">&#39; on </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">instance</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="TransitionNotFound"><a class="viewcode-back" href="../../../states2/exceptions/#states2.exceptions.TransitionNotFound">[docs]</a><span class="k">class</span> <span class="nc">TransitionNotFound</span><span class="p">(</span><span class="n">TransitionException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">from_state</span><span class="p">,</span> <span class="n">to_state</span><span class="p">):</span>
+        <span class="n">TransitionException</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;Transition from &#39;</span><span class="si">%s</span><span class="s">&#39; to &#39;</span><span class="si">%s</span><span class="s">&#39; on </span><span class="si">%s</span><span class="s"> not found&quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">from_state</span><span class="p">,</span> <span class="n">to_state</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="TransitionCannotStart"><a class="viewcode-back" href="../../../states2/exceptions/#states2.exceptions.TransitionCannotStart">[docs]</a><span class="k">class</span> <span class="nc">TransitionCannotStart</span><span class="p">(</span><span class="n">TransitionException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">transition</span><span class="p">):</span>
+        <span class="n">TransitionException</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;Transition &#39;</span><span class="si">%s</span><span class="s">&#39; on </span><span class="si">%s</span><span class="s"> cannot start in the state &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">instance</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">instance</span><span class="o">.</span><span class="n">state</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="TransitionNotValidated"><a class="viewcode-back" href="../../../states2/exceptions/#states2.exceptions.TransitionNotValidated">[docs]</a><span class="k">class</span> <span class="nc">TransitionNotValidated</span><span class="p">(</span><span class="n">TransitionException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">transition</span><span class="p">,</span> <span class="n">validation_errors</span><span class="p">):</span>
+        <span class="n">TransitionException</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;Transition &#39;</span><span class="si">%s</span><span class="s">&#39; on </span><span class="si">%s</span><span class="s"> does not validate (</span><span class="si">%i</span><span class="s"> errors)&quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">instance</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">validation_errors</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation_errors</span> <span class="o">=</span> <span class="n">validation_errors</span>
+
+</div>
+<div class="viewcode-block" id="MachineDefinitionException"><a class="viewcode-back" href="../../../states2/exceptions/#states2.exceptions.MachineDefinitionException">[docs]</a><span class="k">class</span> <span class="nc">MachineDefinitionException</span><span class="p">(</span><span class="n">States2Exception</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
+        <span class="n">States2Exception</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;Error in state machine definition: &#39;</span> <span class="o">+</span> <span class="n">description</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="TransitionValidationError"><a class="viewcode-back" href="../../../states2/exceptions/#states2.exceptions.TransitionValidationError">[docs]</a><span class="k">class</span> <span class="nc">TransitionValidationError</span><span class="p">(</span><span class="n">TransitionException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Errors yielded from StateTransition.validate.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+
+<span class="c"># ==========[ Other exceptions ]==========</span>
+</div>
+<div class="viewcode-block" id="UnknownState"><a class="viewcode-back" href="../../../states2/exceptions/#states2.exceptions.UnknownState">[docs]</a><span class="k">class</span> <span class="nc">UnknownState</span><span class="p">(</span><span class="n">States2Exception</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="n">States2Exception</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;State &quot;</span><span class="si">%s</span><span class="s">&quot; does not exist&#39;</span> <span class="o">%</span> <span class="n">state</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../">django-states2 v1.4.3</a> &raquo;</li>
+          <li><a href="../../" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Jonathan Slenders, Gert Van Gool.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

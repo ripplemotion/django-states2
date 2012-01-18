@@ -1,0 +1,174 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>states2.exceptions &mdash; django-states2 v1.4.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.4.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="django-states2 v1.4.3 documentation" href="../../" />
+    <link rel="next" title="states2.fields" href="../fields/" />
+    <link rel="prev" title="states2.conf" href="../conf/" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../fields/" title="states2.fields"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../conf/" title="states2.conf"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../">django-states2 v1.4.3</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-states2.exceptions">
+<span id="states2-exceptions"></span><h1><tt class="docutils literal"><span class="pre">states2.exceptions</span></tt><a class="headerlink" href="#module-states2.exceptions" title="Permalink to this headline">¶</a></h1>
+<dl class="exception">
+<dt id="states2.exceptions.States2Exception">
+<em class="property">exception </em><tt class="descclassname">states2.exceptions.</tt><tt class="descname">States2Exception</tt><a class="reference internal" href="../../_modules/states2/exceptions/#States2Exception"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.exceptions.States2Exception" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="states2.exceptions.TransitionException">
+<em class="property">exception </em><tt class="descclassname">states2.exceptions.</tt><tt class="descname">TransitionException</tt><a class="reference internal" href="../../_modules/states2/exceptions/#TransitionException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.exceptions.TransitionException" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="states2.exceptions.TransitionOnUnsavedObject">
+<em class="property">exception </em><tt class="descclassname">states2.exceptions.</tt><tt class="descname">TransitionOnUnsavedObject</tt><big>(</big><em>instance</em><big>)</big><a class="reference internal" href="../../_modules/states2/exceptions/#TransitionOnUnsavedObject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.exceptions.TransitionOnUnsavedObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="states2.exceptions.PermissionDenied">
+<em class="property">exception </em><tt class="descclassname">states2.exceptions.</tt><tt class="descname">PermissionDenied</tt><big>(</big><em>instance</em>, <em>transition</em>, <em>user</em><big>)</big><a class="reference internal" href="../../_modules/states2/exceptions/#PermissionDenied"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.exceptions.PermissionDenied" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="states2.exceptions.UnknownTransition">
+<em class="property">exception </em><tt class="descclassname">states2.exceptions.</tt><tt class="descname">UnknownTransition</tt><big>(</big><em>instance</em>, <em>transition</em><big>)</big><a class="reference internal" href="../../_modules/states2/exceptions/#UnknownTransition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.exceptions.UnknownTransition" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="states2.exceptions.TransitionNotFound">
+<em class="property">exception </em><tt class="descclassname">states2.exceptions.</tt><tt class="descname">TransitionNotFound</tt><big>(</big><em>model</em>, <em>from_state</em>, <em>to_state</em><big>)</big><a class="reference internal" href="../../_modules/states2/exceptions/#TransitionNotFound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.exceptions.TransitionNotFound" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="states2.exceptions.TransitionCannotStart">
+<em class="property">exception </em><tt class="descclassname">states2.exceptions.</tt><tt class="descname">TransitionCannotStart</tt><big>(</big><em>instance</em>, <em>transition</em><big>)</big><a class="reference internal" href="../../_modules/states2/exceptions/#TransitionCannotStart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.exceptions.TransitionCannotStart" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="states2.exceptions.TransitionNotValidated">
+<em class="property">exception </em><tt class="descclassname">states2.exceptions.</tt><tt class="descname">TransitionNotValidated</tt><big>(</big><em>instance</em>, <em>transition</em>, <em>validation_errors</em><big>)</big><a class="reference internal" href="../../_modules/states2/exceptions/#TransitionNotValidated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.exceptions.TransitionNotValidated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="states2.exceptions.MachineDefinitionException">
+<em class="property">exception </em><tt class="descclassname">states2.exceptions.</tt><tt class="descname">MachineDefinitionException</tt><big>(</big><em>machine</em>, <em>description</em><big>)</big><a class="reference internal" href="../../_modules/states2/exceptions/#MachineDefinitionException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.exceptions.MachineDefinitionException" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="states2.exceptions.TransitionValidationError">
+<em class="property">exception </em><tt class="descclassname">states2.exceptions.</tt><tt class="descname">TransitionValidationError</tt><a class="reference internal" href="../../_modules/states2/exceptions/#TransitionValidationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.exceptions.TransitionValidationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Errors yielded from StateTransition.validate.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="states2.exceptions.UnknownState">
+<em class="property">exception </em><tt class="descclassname">states2.exceptions.</tt><tt class="descname">UnknownState</tt><big>(</big><em>state</em><big>)</big><a class="reference internal" href="../../_modules/states2/exceptions/#UnknownState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.exceptions.UnknownState" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../conf/"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">states2.conf</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../fields/"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">states2.fields</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/states2/exceptions.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../fields/" title="states2.fields"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../conf/" title="states2.conf"
+             >previous</a> |</li>
+        <li><a href="../../">django-states2 v1.4.3</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Jonathan Slenders, Gert Van Gool.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,249 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>states2.log &mdash; django-states2 v1.4.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.4.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="django-states2 v1.4.3 documentation" href="../../../" />
+    <link rel="up" title="Module code" href="../../" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../">django-states2 v1.4.3</a> &raquo;</li>
+          <li><a href="../../" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for states2.log</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.db.models.base</span> <span class="kn">import</span> <span class="n">ModelBase</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">simplejson</span> <span class="k">as</span> <span class="n">json</span>
+
+<span class="kn">from</span> <span class="nn">states2</span> <span class="kn">import</span> <span class="n">conf</span>
+<span class="kn">from</span> <span class="nn">states2.fields</span> <span class="kn">import</span> <span class="n">StateField</span>
+<span class="kn">from</span> <span class="nn">states2.machine</span> <span class="kn">import</span> <span class="n">StateMachine</span><span class="p">,</span> <span class="n">StateDefinition</span><span class="p">,</span> <span class="n">StateTransition</span>
+
+
+<div class="viewcode-block" id="_create_state_log_model"><a class="viewcode-back" href="../../../states2/log/#states2.log._create_state_log_model">[docs]</a><span class="k">def</span> <span class="nf">_create_state_log_model</span><span class="p">(</span><span class="n">state_model</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">machine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a new model for logging the state transitions.</span>
+
+<span class="sd">    :param django.db.models.Model state_model: the model that has the</span>
+<span class="sd">        :class:`~states2.fields.StateField`</span>
+<span class="sd">    :param str field_name: the field name of the</span>
+<span class="sd">        :class:`~states2.fields.StateField` on the model</span>
+<span class="sd">    :param states2.machine.StateMachine machine: the state machine that&#39;s used</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">class</span> <span class="nc">StateTransitionMachine</span><span class="p">(</span><span class="n">StateMachine</span><span class="p">):</span>
+        <span class="c"># We don&#39;t need logging of state transitions in a state transition log entry,</span>
+        <span class="c"># as this would cause eternal, recursively nested state transition models.</span>
+        <span class="n">log_transitions</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">class</span> <span class="nc">transition_initiated</span><span class="p">(</span><span class="n">StateDefinition</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;State transition initiated&#39;</span><span class="p">)</span>
+            <span class="n">initial</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="k">class</span> <span class="nc">transition_started</span><span class="p">(</span><span class="n">StateDefinition</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;State transition initiated&#39;</span><span class="p">)</span>
+
+        <span class="k">class</span> <span class="nc">transition_failed</span><span class="p">(</span><span class="n">StateDefinition</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;State transition failed&#39;</span><span class="p">)</span>
+
+        <span class="k">class</span> <span class="nc">transition_completed</span><span class="p">(</span><span class="n">StateDefinition</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;State transition completed&#39;</span><span class="p">)</span>
+
+        <span class="k">class</span> <span class="nc">start</span><span class="p">(</span><span class="n">StateTransition</span><span class="p">):</span>
+            <span class="n">from_state</span> <span class="o">=</span> <span class="s">&#39;transition_initiated&#39;</span>
+            <span class="n">to_state</span> <span class="o">=</span> <span class="s">&#39;transition_started&#39;</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Start state transition&#39;</span><span class="p">)</span>
+
+        <span class="k">class</span> <span class="nc">complete</span><span class="p">(</span><span class="n">StateTransition</span><span class="p">):</span>
+            <span class="n">from_state</span> <span class="o">=</span> <span class="s">&#39;transition_started&#39;</span>
+            <span class="n">to_state</span> <span class="o">=</span> <span class="s">&#39;transition_completed&#39;</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Complete state transition&#39;</span><span class="p">)</span>
+
+        <span class="k">class</span> <span class="nc">fail</span><span class="p">(</span><span class="n">StateTransition</span><span class="p">):</span>
+            <span class="n">from_state</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;transition_initiated&#39;</span><span class="p">,</span> <span class="s">&#39;transition_started&#39;</span><span class="p">)</span>
+            <span class="n">to_state</span> <span class="o">=</span> <span class="s">&#39;transition_failed&#39;</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Mark state transition as failed&#39;</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">_StateTransitionMeta</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make _StateTransition act like it has another name,</span>
+<span class="sd">        and was defined in another model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s">&#39;__unicode__&#39;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="n">old_unicode</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;__unicode__&#39;</span><span class="p">]</span>
+
+                <span class="k">def</span> <span class="nf">new_unicode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">old_unicode</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state_info</span><span class="p">()</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+
+            <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;__unicode__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_unicode</span>
+
+            <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;__module__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">state_model</span><span class="o">.</span><span class="n">__module__</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;model_name&#39;</span><span class="p">:</span> <span class="n">state_model</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                      <span class="s">&#39;field_name&#39;</span><span class="p">:</span> <span class="n">field_name</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()}</span>
+            <span class="n">class_name</span> <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">LOG_MODEL_NAME</span> <span class="o">%</span> <span class="n">values</span>
+            <span class="k">return</span> <span class="n">ModelBase</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">class_name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+
+    <span class="n">get_state_choices</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_state_choices</span>
+
+    <span class="k">class</span> <span class="nc">_StateTransition</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        State transitions log entry.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">_StateTransitionMeta</span>
+
+        <span class="n">state</span> <span class="o">=</span> <span class="n">StateField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;state id&#39;</span><span class="p">),</span> <span class="n">machine</span><span class="o">=</span><span class="n">StateTransitionMachine</span><span class="p">)</span>
+
+        <span class="n">from_state</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">get_state_choices</span><span class="p">())</span>
+        <span class="n">to_state</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">get_state_choices</span><span class="p">())</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">serialized_kwargs</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">db_index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;transition started at&#39;</span><span class="p">))</span>
+        <span class="n">on</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">state_model</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s">&#39;all_transitions&#39;</span><span class="p">)</span>
+
+        <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+            <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> transition&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">state_model</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">verbose_name</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">serialized_kwargs</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serialized_kwargs</span><span class="p">)</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">completed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s">&#39;transition_completed&#39;</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">state_transition_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_transition_from_states</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">from_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_state</span><span class="p">)</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">from_state_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">from_state</span><span class="p">)</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">from_state_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">from_state_definition</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">to_state_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_state</span><span class="p">)</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">to_state_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_state_definition</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">make_transition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transition</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            Execute state transition.</span>
+<span class="sd">            Provide ``user`` to do permission checking.</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state_info</span><span class="p">()</span><span class="o">.</span><span class="n">make_transition</span><span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">is_public</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Return True when this state transition is defined public in the machine.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_transition_definition</span><span class="o">.</span><span class="n">public</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">transition_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Return the description for this transition as defined in the</span>
+<span class="sd">            StateTransition declaration of the machine.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="nb">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_transition_definition</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s">&#39;&lt;State transition on </span><span class="si">%s</span><span class="s"> at </span><span class="si">%s</span><span class="s"> from &quot;</span><span class="si">%s</span><span class="s">&quot; to &quot;</span><span class="si">%s</span><span class="s">&quot;&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                        <span class="n">state_model</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_state</span><span class="p">)</span>
+
+    <span class="c"># This model will be detected by South because of the models.Model.__new__ constructor,</span>
+    <span class="c"># which will register it somewhere in a global variable.</span>
+
+    <span class="k">return</span> <span class="n">_StateTransition</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../">django-states2 v1.4.3</a> &raquo;</li>
+          <li><a href="../../" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Jonathan Slenders, Gert Van Gool.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

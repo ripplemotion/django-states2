@@ -1,0 +1,400 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>states2.machine &mdash; django-states2 v1.4.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.4.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="django-states2 v1.4.3 documentation" href="../../../" />
+    <link rel="up" title="Module code" href="../../" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../">django-states2 v1.4.3</a> &raquo;</li>
+          <li><a href="../../" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for states2.machine</h1><div class="highlight"><pre>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;StateMachine&#39;</span><span class="p">,</span> <span class="s">&#39;StateDefinition&#39;</span><span class="p">,</span> <span class="s">&#39;StateTransition&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">states2.exceptions</span> <span class="kn">import</span> <span class="n">TransitionNotFound</span><span class="p">,</span> <span class="n">TransitionValidationError</span><span class="p">,</span> <span class="n">UnknownState</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">StateMachineMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate state machine, and make ``states``, ``transitions`` and</span>
+<span class="sd">        ``initial_state`` attributes available.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">transitions</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">groups</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">initial_state</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="c"># All definitions are derived from StateDefinition and should be</span>
+            <span class="c"># addressable by Machine.states</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attrs</span><span class="p">[</span><span class="n">a</span><span class="p">],</span> <span class="n">StateDefinitionMeta</span><span class="p">):</span>
+                <span class="n">states</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Found state: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">states</span><span class="p">[</span><span class="n">a</span><span class="p">]</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">states</span><span class="p">[</span><span class="n">a</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Found initial state: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">states</span><span class="p">[</span><span class="n">a</span><span class="p">]</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">initial_state</span><span class="p">:</span>
+                        <span class="n">initial_state</span> <span class="o">=</span> <span class="n">a</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Machine defines multiple initial states&#39;</span><span class="p">)</span>
+
+            <span class="c"># All transitions are derived from StateTransition and should be</span>
+            <span class="c"># addressable by Machine.transitions</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attrs</span><span class="p">[</span><span class="n">a</span><span class="p">],</span> <span class="n">StateTransitionMeta</span><span class="p">):</span>
+                <span class="n">transitions</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Found state transition: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">transitions</span><span class="p">[</span><span class="n">a</span><span class="p">]</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+
+            <span class="c"># All definitions derived from StateGroup</span>
+            <span class="c"># should be addressable by Machine.groups</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attrs</span><span class="p">[</span><span class="n">a</span><span class="p">],</span> <span class="n">StateGroupMeta</span><span class="p">):</span>
+                <span class="n">groups</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Found state group: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">groups</span><span class="p">[</span><span class="n">a</span><span class="p">]</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+
+        <span class="c"># At least one initial state required. (But don&#39;t throw error for the</span>
+        <span class="c"># base defintion.)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">initial_state</span> <span class="ow">and</span> <span class="n">bases</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">object</span><span class="p">,):</span>
+            <span class="k">raise</span> <span class="n">MachineDefinitionException</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="s">&#39;Machine does not define initial state&#39;</span><span class="p">)</span>
+
+        <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;states&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">states</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;transitions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">transitions</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;initial_state&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial_state</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;groups&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">groups</span>
+
+        <span class="c"># Give all state transitions a &#39;to_state_description&#39; attribute.</span>
+        <span class="c"># by copying the description from the state definition. (no</span>
+        <span class="c"># from_state_description, because multiple from-states are possible.)</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">transitions</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">to_state_description</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">to_state</span><span class="p">]</span><span class="o">.</span><span class="n">description</span>
+
+        <span class="k">return</span> <span class="nb">type</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">has_transition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transition_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">transition_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span>
+
+    <span class="k">def</span> <span class="nf">get_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transition_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">transition_name</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">has_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">state_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span>
+
+    <span class="k">def</span> <span class="nf">get_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_name</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state_name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">UnknownState</span><span class="p">(</span><span class="n">state_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_transition_from_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_state</span><span class="p">,</span> <span class="n">to_state</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">from_state</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">from_states</span> <span class="ow">and</span> <span class="n">t</span><span class="o">.</span><span class="n">to_state</span> <span class="o">==</span> <span class="n">to_state</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">t</span>
+        <span class="k">raise</span> <span class="n">TransitionNotFound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_state</span><span class="p">,</span> <span class="n">to_state</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_state_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_name</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get a dict of state groups, which will be either ``True`` or ``False``</span>
+<span class="sd">        if the current state is specified in that group.</span>
+
+<span class="sd">        :param str state_name: the current state</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">:</span>
+            <span class="n">sg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="n">group</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sg</span><span class="p">,</span> <span class="s">&#39;states&#39;</span><span class="p">):</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="n">state_name</span> <span class="ow">in</span> <span class="n">sg</span><span class="o">.</span><span class="n">states</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sg</span><span class="p">,</span> <span class="s">&#39;exclude_states&#39;</span><span class="p">):</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">state_name</span> <span class="ow">in</span> <span class="n">sg</span><span class="o">.</span><span class="n">exclude_states</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">class</span> <span class="nc">StateDefinitionMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate state definition</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">bases</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">object</span><span class="p">,):</span>
+            <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="n">name</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Please use lowercase names for state definitions (instead of </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;description&#39;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Please give a description to this state definition&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s">&#39;handler&#39;</span> <span class="ow">in</span> <span class="n">attrs</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;handler&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">func_code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;StateDefinition handler needs at least twoarguments&#39;</span><span class="p">)</span>
+
+        <span class="c"># Turn `handler` into classmethod</span>
+        <span class="k">if</span> <span class="s">&#39;handler&#39;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;handler&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;handler&#39;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="nb">type</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">StateGroupMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate state group definition</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">bases</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">object</span><span class="p">,):</span>
+            <span class="c"># check attributes</span>
+            <span class="k">if</span> <span class="s">&#39;states&#39;</span> <span class="ow">in</span> <span class="n">attrs</span> <span class="ow">and</span> <span class="s">&#39;exclude_states&#39;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Use either states or exclude_states but not both&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="s">&#39;states&#39;</span> <span class="ow">in</span> <span class="n">attrs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="s">&#39;exclude_states&#39;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Please specify states or exclude_states to this state group&#39;</span><span class="p">)</span>
+            <span class="c"># check type of attributes</span>
+            <span class="k">if</span> <span class="s">&#39;exclude_states&#39;</span> <span class="ow">in</span> <span class="n">attrs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;exclude_states&#39;</span><span class="p">],</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Please give a list (or set) of states to this state group&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s">&#39;states&#39;</span> <span class="ow">in</span> <span class="n">attrs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;states&#39;</span><span class="p">],</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Please give a list (or set) of states to this state group&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">type</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">StateTransitionMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">bases</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">object</span><span class="p">,):</span>
+            <span class="k">if</span> <span class="s">&#39;from_state&#39;</span> <span class="ow">in</span> <span class="n">attrs</span> <span class="ow">and</span> <span class="s">&#39;from_states&#39;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Please use either from_state or from_states&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s">&#39;from_state&#39;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;from_states&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;from_state&#39;</span><span class="p">],)</span>
+                <span class="k">del</span> <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;from_state&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;from_states&#39;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Please give a from_state to this state transition&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;to_state&#39;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Please give a from_state to this state transition&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;description&#39;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Please give a description to this state transition&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s">&#39;handler&#39;</span> <span class="ow">in</span> <span class="n">attrs</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;handler&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">func_code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;StateTransition handler needs at least three arguments&#39;</span><span class="p">)</span>
+
+        <span class="c"># Turn `has_permission` and `handler` into classmethods</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;has_permission&#39;</span><span class="p">,</span> <span class="s">&#39;handler&#39;</span><span class="p">,</span> <span class="s">&#39;validate&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">attrs</span><span class="p">[</span><span class="n">m</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="nb">type</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">: (from </span><span class="si">%s</span><span class="s"> to </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">),</span> <span class="s">&#39; or &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">from_states</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_state</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="StateMachine"><a class="viewcode-back" href="../../../states2/machine/#states2.machine.StateMachine">[docs]</a><span class="k">class</span> <span class="nc">StateMachine</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Base class for a state machine definition &quot;&quot;&quot;</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">StateMachineMeta</span>
+
+    <span class="c">#: Log transitions? Log by default.</span>
+    <span class="n">log_transitions</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="StateMachine.get_admin_actions"><a class="viewcode-back" href="../../../states2/machine/#states2.machine.StateMachine.get_admin_actions">[docs]</a>    <span class="k">def</span> <span class="nf">get_admin_actions</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">field_name</span><span class="o">=</span><span class="s">&#39;state&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a list of actions for use in the Django Admin.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">def</span> <span class="nf">create_action</span><span class="p">(</span><span class="n">transition_name</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="n">modeladmin</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">queryset</span><span class="p">):</span>
+                <span class="c"># Dry run first</span>
+                <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">queryset</span><span class="p">:</span>
+                    <span class="n">get_STATE_info</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s">&#39;get_</span><span class="si">%s</span><span class="s">_info&#39;</span> <span class="o">%</span> <span class="n">field_name</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">get_STATE_info</span><span class="o">.</span><span class="n">test_transition</span><span class="p">(</span><span class="n">transition_name</span><span class="p">,</span>
+                                                       <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="n">TransitionException</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">modeladmin</span><span class="o">.</span><span class="n">message_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;ERROR: </span><span class="si">%s</span><span class="s"> on: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">o</span><span class="p">)))</span>
+                        <span class="k">return</span>
+
+                <span class="c"># Make actual transitions</span>
+                <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">queryset</span><span class="p">:</span>
+                    <span class="n">get_STATE_info</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s">&#39;get_</span><span class="si">%s</span><span class="s">_info&#39;</span> <span class="o">%</span> <span class="n">field_name</span><span class="p">)</span>
+                    <span class="n">get_STATE_info</span><span class="o">.</span><span class="n">make_transition</span><span class="p">(</span><span class="n">transition_name</span><span class="p">,</span>
+                                                   <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+
+                <span class="c"># Feeback</span>
+                <span class="n">modeladmin</span><span class="o">.</span><span class="n">message_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;State changed for </span><span class="si">%s</span><span class="s"> objects.&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">queryset</span><span class="p">)))</span>
+
+            <span class="n">action</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">transition_name</span><span class="p">])</span>
+            <span class="n">action</span><span class="o">.</span><span class="n">__name__</span> <span class="o">=</span> <span class="s">&#39;state_transition_</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">transition_name</span>
+            <span class="k">return</span> <span class="n">action</span>
+
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">transitions</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">create_action</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">actions</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="StateMachine.get_state_choices"><a class="viewcode-back" href="../../../states2/machine/#states2.machine.StateMachine.get_state_choices">[docs]</a>    <span class="k">def</span> <span class="nf">get_state_choices</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="s">&#39;Get all possible states&#39;</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">description</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+
+</div></div>
+<div class="viewcode-block" id="StateDefinition"><a class="viewcode-back" href="../../../states2/machine/#states2.machine.StateDefinition">[docs]</a><span class="k">class</span> <span class="nc">StateDefinition</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Base class for a state definition &quot;&quot;&quot;</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">StateDefinitionMeta</span>
+
+    <span class="c">#: Is this the initial state?  Not initial by default. The machine should</span>
+    <span class="c"># define at least one state where ``initial=True``</span>
+    <span class="n">initial</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="StateDefinition.handler"><a class="viewcode-back" href="../../../states2/machine/#states2.machine.StateDefinition.handler">[docs]</a>    <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override this method if some specific actions need</span>
+<span class="sd">        to be executed *after arriving* in this state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="StateDefinition.get_name"><a class="viewcode-back" href="../../../states2/machine/#states2.machine.StateDefinition.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The name of the state is given by its classname</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">__name__</span>
+
+</div></div>
+<span class="k">class</span> <span class="nc">StateGroup</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="s">&quot;Base class for a state groups&quot;</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">StateGroupMeta</span>
+
+    <span class="c">#: Description for this state group</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The name of the state group is given by its classname</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">__name__</span>
+
+
+<div class="viewcode-block" id="StateTransition"><a class="viewcode-back" href="../../../states2/machine/#states2.machine.StateTransition">[docs]</a><span class="k">class</span> <span class="nc">StateTransition</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Base class for a state transitions &quot;&quot;&quot;</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">StateTransitionMeta</span>
+
+    <span class="c">#: When a transition has been defined as public, is meant to be seen</span>
+    <span class="c">#: by the end-user.</span>
+    <span class="n">public</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="StateTransition.has_permission"><a class="viewcode-back" href="../../../states2/machine/#states2.machine.StateTransition.has_permission">[docs]</a>    <span class="k">def</span> <span class="nf">has_permission</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check whether this user is allowed to execute this state transition on</span>
+<span class="sd">        this object. You can override this function for every StateTransition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span>
+        <span class="c"># By default, only superusers are allowed to execute this transition.</span>
+        <span class="c"># Note that this is the only permission checking for the POST views.</span>
+</div>
+<div class="viewcode-block" id="StateTransition.validate"><a class="viewcode-back" href="../../../states2/machine/#states2.machine.StateTransition.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate whether this object is valid to make this state transition.</span>
+<span class="sd">        Yields a list of TransitionValidationError. You can override this</span>
+<span class="sd">        function for every StateTransition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">TransitionValidationError</span><span class="p">(</span><span class="s">&#39;Example error&#39;</span><span class="p">)</span>
+        <span class="c"># Don&#39;t use the &#39;raise&#39;-statement in here, just yield all the errors.</span>
+        <span class="c"># yield TransitionValidationError(&quot;This object needs ....&quot;)</span>
+        <span class="c"># yield TransitionValidationError(&quot;Another error ....&quot;)</span>
+</div>
+<div class="viewcode-block" id="StateTransition.handler"><a class="viewcode-back" href="../../../states2/machine/#states2.machine.StateTransition.handler">[docs]</a>    <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override this method if some specific actions need</span>
+<span class="sd">        to be executed during this state transition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="StateTransition.get_name"><a class="viewcode-back" href="../../../states2/machine/#states2.machine.StateTransition.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The name of the state transition is always given by its classname</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">__name__</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="StateTransition.handler_kwargs"><a class="viewcode-back" href="../../../states2/machine/#states2.machine.StateTransition.handler_kwargs">[docs]</a>    <span class="k">def</span> <span class="nf">handler_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">handler</span><span class="o">.</span><span class="n">func_code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../">django-states2 v1.4.3</a> &raquo;</li>
+          <li><a href="../../" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Jonathan Slenders, Gert Van Gool.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

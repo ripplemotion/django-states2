@@ -1,0 +1,299 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Django States (v2) &mdash; django-states2 v1.4.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.4.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="django-states2 v1.4.3 documentation" href="../" />
+    <link rel="next" title="states2.conf" href="../states2/conf/" />
+    <link rel="prev" title="django-states2 documentation!" href="../" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../states2/conf/" title="states2.conf"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../" title="django-states2 documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../">django-states2 v1.4.3</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="django-states-v2">
+<h1>Django States (v2)<a class="headerlink" href="#django-states-v2" title="Permalink to this headline">¶</a></h1>
+<p>Authors:</p>
+<ul class="simple">
+<li>Jonathan Slenders, City Live nv</li>
+<li>Gert van Gool, City Live nv</li>
+</ul>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>State engine for django models. Define a state graph for a model and
+remember the state of each object.  State transitions can be logged for
+objects.</p>
+</div>
+<div class="section" id="usage-example">
+<h2>Usage example<a class="headerlink" href="#usage-example" title="Permalink to this headline">¶</a></h2>
+<p>It&#8217;s basically these two things:</p>
+<ul class="simple">
+<li>Derived your model from <tt class="docutils literal"><span class="pre">StateModel</span></tt></li>
+<li>Add a <tt class="docutils literal"><span class="pre">Machine</span></tt> class to your model, for the state machine</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">states2.models</span> <span class="kn">import</span> <span class="n">StateMachine</span><span class="p">,</span> <span class="n">StateDefinition</span><span class="p">,</span> <span class="n">StateTransition</span>
+<span class="kn">from</span> <span class="nn">states2.models</span> <span class="kn">import</span> <span class="n">StateModel</span>
+
+<span class="k">class</span> <span class="nc">PurchaseStateMachine</span><span class="p">(</span><span class="n">StateMachine</span><span class="p">):</span>
+   <span class="n">log_transitions</span> <span class="o">=</span> <span class="bp">True</span>
+
+   <span class="c"># possible states</span>
+   <span class="k">class</span> <span class="nc">initiated</span><span class="p">(</span><span class="n">StateDefinition</span><span class="p">):</span>
+       <span class="n">description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Purchase initiated&#39;</span><span class="p">)</span>
+       <span class="n">initial</span> <span class="o">=</span> <span class="bp">True</span>
+
+   <span class="k">class</span> <span class="nc">paid</span><span class="p">(</span><span class="n">StateDefinition</span><span class="p">):</span>
+       <span class="n">description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Purchase paid&#39;</span><span class="p">)</span>
+
+       <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+           <span class="n">code_to_execute_when_arriving_in_this_state</span><span class="p">()</span>
+
+   <span class="k">class</span> <span class="nc">shipped</span><span class="p">(</span><span class="n">StateDefinition</span><span class="p">):</span>
+       <span class="n">description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Purchase shipped&#39;</span><span class="p">)</span>
+
+   <span class="c"># state transitions</span>
+   <span class="k">class</span> <span class="nc">mark_paid</span><span class="p">(</span><span class="n">StateTransition</span><span class="p">):</span>
+       <span class="n">from_state</span> <span class="o">=</span> <span class="s">&#39;initiated&#39;</span>
+       <span class="n">to_state</span> <span class="o">=</span> <span class="s">&#39;paid&#39;</span>
+       <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;Mark this purchase as paid&#39;</span>
+
+   <span class="k">class</span> <span class="nc">ship</span><span class="p">(</span><span class="n">StateTransition</span><span class="p">):</span>
+       <span class="n">from_state</span> <span class="o">=</span> <span class="s">&#39;paid&#39;</span>
+       <span class="n">to_state</span> <span class="o">=</span> <span class="s">&#39;shipped&#39;</span>
+       <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;Ship purchase&#39;</span>
+
+       <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+           <span class="n">code_to_execute_during_this_transition</span><span class="p">()</span>
+
+       <span class="k">def</span> <span class="nf">has_permission</span><span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+           <span class="k">return</span> <span class="n">true_when_user_can_make_this_transition</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">Purchase</span><span class="p">(</span><span class="n">StateModel</span><span class="p">):</span>
+    <span class="n">Machine</span> <span class="o">=</span> <span class="n">PurchaseStateMachine</span>
+    <span class="o">...</span> <span class="p">(</span><span class="n">other</span> <span class="n">fields</span> <span class="k">for</span> <span class="n">a</span> <span class="n">purchase</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You may of course nest the <tt class="docutils literal"><span class="pre">Machine</span></tt> class, like you would usually do
+for <tt class="docutils literal"><span class="pre">Meta</span></tt>.</p>
+<p>This will create the necessary models. If <tt class="docutils literal"><span class="pre">log_transitions</span></tt> is
+enabled, another model is created. Everything should be compatible with
+<a class="reference external" href="http://south.aeracode.org/">South</a> for migrations.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you&#8217;re creating a <tt class="docutils literal"><span class="pre">DataMigration</span></tt> in <a class="reference external" href="http://south.aeracode.org/">South</a> remember to use
+<tt class="docutils literal"><span class="pre">obj.save(no_state_validation=True)</span></tt></p>
+</div>
+<p>Usage example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">p</span> <span class="o">=</span> <span class="n">Purchase</span><span class="p">()</span>
+
+<span class="c"># Will automatically create state object for this purchase, in the</span>
+<span class="c"># initial state.</span>
+<span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">p</span><span class="o">.</span><span class="n">make_transition</span><span class="p">(</span><span class="s">&#39;initiate&#39;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span> <span class="c"># User parameter is optional</span>
+<span class="n">p</span><span class="o">.</span><span class="n">state</span> <span class="c"># Will return &#39;paid&#39;</span>
+<span class="n">p</span><span class="o">.</span><span class="n">state_description</span> <span class="c"># Will return &#39;Purchase paid&#39;</span>
+
+<span class="c"># Will return all the state transitions for this instance.</span>
+<span class="n">p</span><span class="o">.</span><span class="n">state_transitions</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+<span class="c"># The user who triggered this transition</span>
+<span class="n">p</span><span class="o">.</span><span class="n">state_transitions</span><span class="o">.</span><span class="n">all</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">user</span>
+
+<span class="c"># Will return &#39;complete&#39; or &#39;failed&#39;, depending on the state of this</span>
+<span class="c"># state transition.</span>
+<span class="n">p</span><span class="o">.</span><span class="n">state_transitions</span><span class="o">.</span><span class="n">all</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">state</span>
+
+<span class="c"># Returns an iterator of possible transitions for this purchase.</span>
+<span class="n">p</span><span class="o">.</span><span class="n">possible_transitions</span>
+</pre></div>
+</div>
+<p>For better transition control, override:</p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">has_permission(self,</span> <span class="pre">instance,</span> <span class="pre">user)</span></tt>:</dt>
+<dd><p class="first last">Check whether this user is allowed to make this transition.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">handler(self,</span> <span class="pre">instance,</span> <span class="pre">user)</span></tt>:</dt>
+<dd><p class="first last">Code to run during this transition. When an exception has been
+raised in here, the transition will not be made.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Get all objects in a certain state:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Purchase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s">&#39;initiated&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="validation">
+<h3>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">¶</a></h3>
+<p>You can add a test that needs to pass before a state transition can be
+executed. Well, you can add 2: one based on the current user
+(<tt class="docutils literal"><span class="pre">has_permission</span></tt>) and one generic (<tt class="docutils literal"><span class="pre">validate</span></tt>).</p>
+<p>So on a <tt class="docutils literal"><span class="pre">StateTransition</span></tt>-object you need to specify an extra <tt class="docutils literal"><span class="pre">validate</span></tt>
+function (signature is <tt class="docutils literal"><span class="pre">validate(cls,</span> <span class="pre">instance)</span></tt>). This should yield
+<tt class="docutils literal"><span class="pre">TransitionValidationError</span></tt>, this way you can return multiple errors on
+that need to pass before the transition can happen.</p>
+<p>The <tt class="docutils literal"><span class="pre">has_permission</span></tt> function (signature <tt class="docutils literal"><span class="pre">has_permission(transition,</span>
+<span class="pre">instance,</span> <span class="pre">user)</span></tt>) should check whether the given user is allowed to make the
+transition. E.g. a super user can moderate all comments while other users can
+only moderate comments on their blog-posts.</p>
+</div>
+<div class="section" id="groups">
+<h3>Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h3>
+<p>Sometimes you want to group several states together, since for a certain view
+(or other content) it doesn&#8217;t really matter which of the states it is. We
+support 2 different state groups, inclusive (only these) or exclusive
+(everything but these):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">is_paid</span><span class="p">(</span><span class="n">StateGroup</span><span class="p">):</span>
+    <span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;paid&#39;</span><span class="p">,</span> <span class="s">&#39;shipped&#39;</span><span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">is_paid</span><span class="p">(</span><span class="n">StateGroup</span><span class="p">):</span>
+    <span class="n">exclude_states</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;initiated&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="admin-actions">
+<h3>Admin actions<a class="headerlink" href="#admin-actions" title="Permalink to this headline">¶</a></h3>
+<p>By specifying actions for the Django Admin (see <a class="reference external" href="http://docs.djangoproject.com/en/dev/ref/contrib/admin/actions/">admin actions</a>), you can do
+state transitions for the admin site. To support this in your model, update
+your <tt class="docutils literal"><span class="pre">ModelAdmin</span></tt>:</p>
+<div class="highlight-python"><pre>class PurchaseAdmin(admin.ModelAdmin);
+    actions = Purchase.Machine.get_admin_actions()</pre>
+</div>
+<p>If your model didn&#8217;t inherit from <tt class="docutils literal"><span class="pre">StateModel</span></tt>, you can also specify the
+<tt class="docutils literal"><span class="pre">field_name</span></tt>:</p>
+<div class="highlight-python"><pre>class PurchaseAdmin(admin.ModelAdmin);
+    actions = Purchase.Machine.get_admin_actions(field_name='purchase_state')</pre>
+</div>
+</div>
+<div class="section" id="state-graph">
+<h3>State graph<a class="headerlink" href="#state-graph" title="Permalink to this headline">¶</a></h3>
+<p>You can get a graph of your states by running the <tt class="docutils literal"><span class="pre">graph_states</span></tt> management
+command.</p>
+<div class="highlight-python"><pre>python manage.py graph_states myapp.Purchase.state</pre>
+</div>
+<p>This requires <cite>graphviz &lt;http://graphviz.org&gt;</cite> and python bindings for
+graphviz: <tt class="docutils literal"><span class="pre">pygraphviz</span></tt> and <tt class="docutils literal"><span class="pre">yapgvb</span></tt>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Django States (v2)</a><ul>
+<li><a class="reference internal" href="#description">Description</a></li>
+<li><a class="reference internal" href="#usage-example">Usage example</a><ul>
+<li><a class="reference internal" href="#validation">Validation</a></li>
+<li><a class="reference internal" href="#groups">Groups</a></li>
+<li><a class="reference internal" href="#admin-actions">Admin actions</a></li>
+<li><a class="reference internal" href="#state-graph">State graph</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../"
+                        title="previous chapter">django-states2 documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../states2/conf/"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">states2.conf</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/readme.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../states2/conf/" title="states2.conf"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../" title="django-states2 documentation!"
+             >previous</a> |</li>
+        <li><a href="../">django-states2 v1.4.3</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Jonathan Slenders, Gert Van Gool.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

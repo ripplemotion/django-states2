@@ -1,0 +1,140 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>states2.templatetags.states2 &mdash; django-states2 v1.4.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.4.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="django-states2 v1.4.3 documentation" href="../../" />
+    <link rel="next" title="states2.views" href="../views/" />
+    <link rel="prev" title="states2.models" href="../models/" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../views/" title="states2.views"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../models/" title="states2.models"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../">django-states2 v1.4.3</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-states2.templatetags.states2">
+<span id="states2-templatetags-states2"></span><h1><tt class="docutils literal"><span class="pre">states2.templatetags.states2</span></tt><a class="headerlink" href="#module-states2.templatetags.states2" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="states2.templatetags.states2.CanMakeTransitionNode">
+<em class="property">class </em><tt class="descclassname">states2.templatetags.states2.</tt><tt class="descname">CanMakeTransitionNode</tt><big>(</big><em>object</em>, <em>transition_name</em>, <em>nodelist</em><big>)</big><a class="reference internal" href="../../_modules/states2/templatetags/states2/#CanMakeTransitionNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.templatetags.states2.CanMakeTransitionNode" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="states2.templatetags.states2.CanMakeTransitionNode.render">
+<tt class="descname">render</tt><big>(</big><em>context</em><big>)</big><a class="reference internal" href="../../_modules/states2/templatetags/states2/#CanMakeTransitionNode.render"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.templatetags.states2.CanMakeTransitionNode.render" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="states2.templatetags.states2.can_make_transition">
+<tt class="descclassname">states2.templatetags.states2.</tt><tt class="descname">can_make_transition</tt><big>(</big><em>parser</em>, <em>token</em><big>)</big><a class="reference internal" href="../../_modules/states2/templatetags/states2/#can_make_transition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.templatetags.states2.can_make_transition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conditional tag to validate whether it&#8217;s possible to make a state
+transition (and the user is allowed to make the transition)</p>
+<p>Usage:</p>
+<div class="highlight-python"><pre>{% can_make_transition object transition_name %}
+   ...
+{% end_can_make_transition %}</pre>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../models/"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">states2.models</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../views/"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">states2.views</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/states2/templatetags.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../views/" title="states2.views"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../models/" title="states2.models"
+             >previous</a> |</li>
+        <li><a href="../../">django-states2 v1.4.3</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Jonathan Slenders, Gert Van Gool.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

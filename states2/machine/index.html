@@ -1,0 +1,233 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>states2.machine &mdash; django-states2 v1.4.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.4.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="django-states2 v1.4.3 documentation" href="../../" />
+    <link rel="next" title="states2.model_methods" href="../model_methods/" />
+    <link rel="prev" title="states2.log" href="../log/" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../model_methods/" title="states2.model_methods"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../log/" title="states2.log"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../">django-states2 v1.4.3</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-states2.machine">
+<span id="states2-machine"></span><h1><tt class="docutils literal"><span class="pre">states2.machine</span></tt><a class="headerlink" href="#module-states2.machine" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="states2.machine.StateMachine">
+<em class="property">class </em><tt class="descclassname">states2.machine.</tt><tt class="descname">StateMachine</tt><a class="reference internal" href="../../_modules/states2/machine/#StateMachine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.machine.StateMachine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for a state machine definition</p>
+<dl class="attribute">
+<dt id="states2.machine.StateMachine.log_transitions">
+<tt class="descname">log_transitions</tt><em class="property"> = True</em><a class="headerlink" href="#states2.machine.StateMachine.log_transitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log transitions? Log by default.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="states2.machine.StateMachine.get_admin_actions">
+<em class="property">classmethod </em><tt class="descname">get_admin_actions</tt><big>(</big><em>field_name='state'</em><big>)</big><a class="reference internal" href="../../_modules/states2/machine/#StateMachine.get_admin_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.machine.StateMachine.get_admin_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a list of actions for use in the Django Admin.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="states2.machine.StateMachine.get_state_choices">
+<em class="property">classmethod </em><tt class="descname">get_state_choices</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/states2/machine/#StateMachine.get_state_choices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.machine.StateMachine.get_state_choices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all possible states</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="states2.machine.StateMachine.groups">
+<tt class="descname">groups</tt><em class="property"> = {}</em><a class="headerlink" href="#states2.machine.StateMachine.groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="states2.machine.StateMachine.initial_state">
+<tt class="descname">initial_state</tt><em class="property"> = None</em><a class="headerlink" href="#states2.machine.StateMachine.initial_state" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="states2.machine.StateMachine.states">
+<tt class="descname">states</tt><em class="property"> = {}</em><a class="headerlink" href="#states2.machine.StateMachine.states" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="states2.machine.StateMachine.transitions">
+<tt class="descname">transitions</tt><em class="property"> = {}</em><a class="headerlink" href="#states2.machine.StateMachine.transitions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="states2.machine.StateDefinition">
+<em class="property">class </em><tt class="descclassname">states2.machine.</tt><tt class="descname">StateDefinition</tt><a class="reference internal" href="../../_modules/states2/machine/#StateDefinition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.machine.StateDefinition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for a state definition</p>
+<dl class="attribute">
+<dt id="states2.machine.StateDefinition.initial">
+<tt class="descname">initial</tt><em class="property"> = False</em><a class="headerlink" href="#states2.machine.StateDefinition.initial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is this the initial state?  Not initial by default. The machine should</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="states2.machine.StateDefinition.handler">
+<em class="property">classmethod </em><tt class="descname">handler</tt><big>(</big><em>instance</em><big>)</big><a class="reference internal" href="../../_modules/states2/machine/#StateDefinition.handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.machine.StateDefinition.handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Override this method if some specific actions need
+to be executed <em>after arriving</em> in this state.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="states2.machine.StateDefinition.get_name">
+<em class="property">classmethod </em><tt class="descname">get_name</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/states2/machine/#StateDefinition.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.machine.StateDefinition.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the state is given by its classname</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="states2.machine.StateTransition">
+<em class="property">class </em><tt class="descclassname">states2.machine.</tt><tt class="descname">StateTransition</tt><a class="reference internal" href="../../_modules/states2/machine/#StateTransition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.machine.StateTransition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for a state transitions</p>
+<dl class="attribute">
+<dt id="states2.machine.StateTransition.public">
+<tt class="descname">public</tt><em class="property"> = False</em><a class="headerlink" href="#states2.machine.StateTransition.public" title="Permalink to this definition">¶</a></dt>
+<dd><p>When a transition has been defined as public, is meant to be seen
+by the end-user.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="states2.machine.StateTransition.has_permission">
+<em class="property">classmethod </em><tt class="descname">has_permission</tt><big>(</big><em>instance</em>, <em>user</em><big>)</big><a class="reference internal" href="../../_modules/states2/machine/#StateTransition.has_permission"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.machine.StateTransition.has_permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether this user is allowed to execute this state transition on
+this object. You can override this function for every StateTransition.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="states2.machine.StateTransition.validate">
+<em class="property">classmethod </em><tt class="descname">validate</tt><big>(</big><em>instance</em><big>)</big><a class="reference internal" href="../../_modules/states2/machine/#StateTransition.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.machine.StateTransition.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate whether this object is valid to make this state transition.
+Yields a list of TransitionValidationError. You can override this
+function for every StateTransition.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="states2.machine.StateTransition.handler">
+<em class="property">classmethod </em><tt class="descname">handler</tt><big>(</big><em>instance</em>, <em>user</em><big>)</big><a class="reference internal" href="../../_modules/states2/machine/#StateTransition.handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.machine.StateTransition.handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Override this method if some specific actions need
+to be executed during this state transition.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="states2.machine.StateTransition.get_name">
+<em class="property">classmethod </em><tt class="descname">get_name</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/states2/machine/#StateTransition.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.machine.StateTransition.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the state transition is always given by its classname</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="states2.machine.StateTransition.handler_kwargs">
+<tt class="descname">handler_kwargs</tt><a class="reference internal" href="../../_modules/states2/machine/#StateTransition.handler_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#states2.machine.StateTransition.handler_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../log/"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">states2.log</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../model_methods/"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">states2.model_methods</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/states2/machine.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../model_methods/" title="states2.model_methods"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../log/" title="states2.log"
+             >previous</a> |</li>
+        <li><a href="../../">django-states2 v1.4.3</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Jonathan Slenders, Gert Van Gool.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,4 +1,5 @@
 from django.utils import simplejson as json
+from django.contrib.auth.models import User as Auth_user
 
 from states2.exceptions import (PermissionDenied, TransitionCannotStart,
                                 TransitionException, TransitionNotValidated,
@@ -118,8 +119,26 @@ def get_STATE_info(self, field='state', machine=None):
                 raise TransitionCannotStart(self, transition)
 
             # User should have permissions for this transition
-            if user and not t.has_permission(self, user):
-                raise PermissionDenied(self, transition, user)
+            #if transition not implement the have_permission we give the permission
+            #if they implment the method, call it and get the result
+            #if they implement the method but no user given, raise the permission denied
+            
+            have_permission = False
+            implemente_has_permission = getattr(t, 'has_permission', None)
+            if implemente_has_permission and user:
+               try:
+                  have_permission = t.has_permission(self, user)
+               except Exception, e:
+                  #the have permission got an exception, probably because we call has_perm without user
+                  pass
+            elif implemente_has_permission and not user:
+               have_permission = False
+            else:
+               have_permission = True
+               
+            if not have_permission:
+               raise PermissionDenied(self, transition, user)
+         
 
             # Transition should validate
             validation_errors = list(t.validate(self))
@@ -154,12 +173,22 @@ def get_STATE_info(self, field='state', machine=None):
                     serialized_kwargs = json.dumps(kwargs)
                 except TypeError:
                     serialized_kwargs = json.dumps(None)
-
+                
+                #we have to test if user is an instance of auth_user or a profile link to a user
+                auth_user = user
+                if user:
+                   if not isinstance(user, Auth_user):
+                      #user is not an auth_user, search the user.user and test instance
+                      auth_user = getattr(user, 'user', None)
+                      if auth_user and isinstance(auth_user, Auth_user):
+                         auth_user = auth_user
+                         #else let the exception raise
+                
                 transition_log = _state_log_model.objects.create(
                                 on=self,
                                 from_state=getattr(self, field),
                                 to_state=t.to_state,
-                                user=user,
+                                user=auth_user,
                                 serialized_kwargs=serialized_kwargs,
                                 )
 

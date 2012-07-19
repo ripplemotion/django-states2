@@ -322,14 +322,15 @@ class StateTransition(object):
     #: by the end-user.
     public = False
 
-    def has_permission(cls, instance, user):
-        '''
-        Check whether this user is allowed to execute this state transition on
-        this object. You can override this function for every StateTransition.
-        '''
-        return user.is_superuser
-        # By default, only superusers are allowed to execute this transition.
-        # Note that this is the only permission checking for the POST views.
+    # def has_permission(cls, instance, user):
+    #     '''
+    #     Check whether this user is allowed to execute this state transition on
+    #     this object. You can override this function for every StateTransition.
+    #     '''
+    #     #return user.is_superuser
+    #     return 
+    #     # By default, only superusers are allowed to execute this transition.
+    #     # Note that this is the only permission checking for the POST views.
 
     def validate(cls, instance):
         '''

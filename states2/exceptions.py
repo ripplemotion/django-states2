@@ -16,8 +16,8 @@ class TransitionOnUnsavedObject(TransitionException):
 
 class PermissionDenied(TransitionException):
     def __init__(self, instance, transition, user):
-        if user.is_authenticated():
-            username = user.get_full_name()
+        if user:
+            username = user
         else:
             username = 'AnonymousUser'
         TransitionException.__init__(self, "Permission for executing the state '%s' has be denied to %s."

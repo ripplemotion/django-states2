@@ -130,7 +130,12 @@ class StateModel(models.Model):
         :returns: list of transitions which can be made from the current state
         '''
         return self.get_state_info().possible_transitions()
-
+    
+    #@property
+    def next_transitions(self):
+       """wrap the machine.possible_transitions add list instead of generator"""
+       return map(lambda t: t, self.possible_transitions)
+    
     @classmethod
     def get_state_model_name(self):
         '''
@@ -153,6 +158,24 @@ class StateModel(models.Model):
             return self.test_transition(transition, user)
         except States2Exception:
             return False
+
+    def can_pass_transition(self, transition, user=None):
+        """
+        wrapper around the test_transition
+        you have to test the if test_transition and not error
+
+        error can be an exception or a generator of exception
+
+        you can also use self.can_make_transition(transition, user) that return just true or false
+        or test_transition that return true or raise States2Exception 
+        """
+        test_transition = False
+        errors = None
+        try:
+          return self.test_transition(transition=transition, user=user)
+        except States2Exception, e:
+          errors = e
+        return (test_transition, errors)
 
     def test_transition(self, transition, user=None):
         '''

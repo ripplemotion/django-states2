@@ -89,9 +89,9 @@ def _create_state_log_model(state_model, field_name, machine):
                            verbose_name=_('state id'),
                            machine=StateTransitionMachine)
 
-        from_state = models.CharField(max_length=32,
+        from_state = models.CharField(max_length=64,
                                       choices=get_state_choices())
-        to_state = models.CharField(max_length=32, choices=get_state_choices())
+        to_state = models.CharField(max_length=64, choices=get_state_choices())
         user = models.ForeignKey(User, blank=True, null=True)
         serialized_kwargs = models.TextField(blank=True)
 

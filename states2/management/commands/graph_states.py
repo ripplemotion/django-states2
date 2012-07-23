@@ -58,7 +58,7 @@ class Command(BaseCommand):
                 edge = g.add_edge(nodes[from_state], nodes[trion.to_state])
                 edge.dir = 'forward'
                 edge.arrowhead = 'normal'
-                edge.label = '\n_'.join(trion.get_name().split('_'))
+                edge.label = '  ' + trion.get_name()
                 edge.fontsize = 8
                 edge.fontname = 'Arial'
 
